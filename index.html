@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pomodoro</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="page">
+        
+      <div class="arrow-overlay">
+        <svg
+          fill="#000000"
+          height="200px"
+          width="200px"
+          version="1.1"
+          id="Layer_1"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          viewBox="0 0 493.796 493.796"
+          xml:space="preserve"
+        >
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            <g>
+              <g>
+                <path
+                  d="M355.938,200.956L81.414,12.128c-11.28-7.776-23.012-11.88-33.056-11.88c-22.052,0-36.672,18.496-36.672,48.26v397.036 c0,14.54,4.228,26.688,10.496,35.144c6.364,8.572,16.32,13.108,27.076,13.108c10.04,0,21.308-4.112,32.584-11.876l274.276-188.828 c17.632-12.152,27.3-28.508,27.296-46.076C383.414,229.456,373.594,213.1,355.938,200.956z"
+                ></path>
+              </g>
+            </g>
+            <g>
+              <g>
+                <g>
+                  <path
+                    d="M456.446,493.672l-0.293-0.004c-0.048,0-0.095,0.004-0.143,0.004H456.446z"
+                  ></path>
+                  <path
+                    d="M455.638,0L444.29,0.032c-14.86,0-27.724,12.112-27.724,26.992v439.368c0,14.896,12.652,27.124,27.532,27.124 l12.055,0.152c14.805-0.079,25.957-12.412,25.957-27.252V26.996C482.11,12.116,470.51,0,455.638,0z"
+                  ></path>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <div class="lap">
+        <p id="lap-counter" style="padding-right: 1rem;">#0</p>
+      </div>
+
+      <div class="close">
+        <button class="close-button" onclick="closeWindow()">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="total-time">
+        <p id="global-time" style="padding-right: 1rem ;">00:00</p>
+      </div>
+      <div class="container">
+        <div class="time-wrapper">
+          <div class="timer">
+            <p id="pomodoro">25:00</p>
+          </div>
+          <button class="start" id="startButton"><p>Start</p></button>
+        </div>
+      </div>
+      <p class="rich">Time to focus!</p>
+    </div>
+
+    <script>
+    
+let startAudio = new Audio("assets/sounds/start.mp3");
+let stopAudio = new Audio("assets/sounds/stop.mp3");
+let winningAudio = new Audio("assets/sounds/chime.mp3");
+      let timer = document.getElementById("pomodoro");
+      let lapCounter = document.getElementById("lap-counter");
+      let globalTime = document.getElementById("global-time");
+      let startButton = document.querySelector(".start");
+      let bg = document.querySelector(".page");
+      let arrowOverlay = document.querySelector(".arrow-overlay");
+      let richText = document.querySelector(".rich");
+      let startText = document.querySelector(".start p");
+      let lapCount = 0;
+      let globalSeconds = 0;
+      let isRunning = false;
+      let seconds = 1500; // 25 minutes
+      let interval = null;
+      let isWorkPhase = true;
+      let bgColors = ["#BA4949", "#49BAA9", "#654949"];
+      function formatTime(totalSeconds) {
+        const minutes = Math.floor(totalSeconds / 60)
+          .toString()
+          .padStart(2, "0");
+        const secs = (totalSeconds % 60).toString().padStart(2, "0");
+        return `${minutes}:${secs}`;
+      }
+      timer.textContent = formatTime(seconds);
+      // FUNCTION TO START THE TIMER
+      function startTimer() {
+        if (isRunning) return;
+        
+        isRunning = true;
+      startAudio.play();
+        interval = setInterval(() => {
+          if (seconds <= 0) {
+            isWorkPhase = !isWorkPhase; 
+            clearInterval(interval);
+            isRunning = false;
+            startButton.classList.remove("inactive");
+            startButton.classList.add("active");
+            startText.textContent = "Start";
+            winningAudio.play();
+            if (isWorkPhase) {
+              seconds = 1501; // 25 minutes for work phase
+              bg.style.backgroundColor = bgColors[0]; // Change background color for work phase
+              startText.style.color = bgColors[0]; // Change start button text color
+              richText.textContent = "Time to focus!";
+              lapCount++;
+            } else {
+              seconds = 301; // 5 minutes for break phase
+              bg.style.backgroundColor = bgColors[1]; // Change background color for break phase
+              startText.style.color = bgColors[1]; // Change start button text color
+              richText.textContent = "Time to take a break!";
+            }
+
+            lapCounter.textContent = `#${lapCount}`;
+
+            globalTime.textContent = formatTime(globalSeconds);
+            timer.textContent = formatTime(seconds);
+          }
+
+          seconds--;
+          timer.textContent = formatTime(seconds);
+          globalSeconds++;
+          globalTime.textContent = formatTime(globalSeconds);
+        }, 1000);
+      }
+      startButton.addEventListener("click", () => {
+        if (!isRunning) {
+          startButton.classList.add("inactive");
+          startTimer();
+          startText.textContent = "Resume";
+          
+        } else {
+          
+          isRunning = false;
+          startText.textContent = "Start";
+        }
+      });
+      arrowOverlay.addEventListener("click", () => {
+        if (isRunning) {
+          seconds = 0;
+        }
+      });
+
+    const timeWrapper = document.getElementsByClassName("timer")[0];
+
+timeWrapper.addEventListener("click", () => {
+  if (startButton.classList.contains("inactive")) {
+    startButton.classList.remove("inactive");
+    startButton.classList.add("active");
+     clearInterval(interval);
+    stopAudio.play();
+     isRunning = false;
+  } else {
+    startButton.classList.remove("active");
+    startButton.classList.add("inactive");
+    startTimer();
+  }
+
+  console.log("clicked");
+});
+
+
+function closeWindow() {
+  const { ipcRenderer } = require('electron');
+  console.log("Closing the app");
+ipcRenderer.send('close-app');
+}
+
+
+
+
+
+
+    </script>
+  </body>
+</html>
